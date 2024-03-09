@@ -8,7 +8,7 @@ interface IMyToken {
 }
 
 contract CrowdFundEasy {
-		uint256 campaignIds;
+		uint256 private campaignIds;
         IMyToken immutable private token;
         struct Campaign {
             address creator;
@@ -139,5 +139,10 @@ contract CrowdFundEasy {
      //Just For testing you can remove this
      function fetchCampaignDetails(uint256 _id) external view returns (Campaign memory campaign) {
         return campaigns[_id];
+    }   
+
+    //Just For testing you can remove this
+     function fetchTotalCampaignIds() external view returns (uint256) {
+        return campaignIds;
     }   
 }

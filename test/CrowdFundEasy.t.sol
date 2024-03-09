@@ -31,6 +31,20 @@ contract CrowdFundEasyTest is Test {
        assertEq(campaign.totalFundsCollected , 0 );
     }
 
+    function testCreateMultipleCampaigns() public {
+        address user1 = address(1);
+        address user2 = address(2);
+
+        vm.prank(user1);
+        crowdFundEasy.createCampaign(4, 4 days);
+
+        vm.prank(user2);
+        crowdFundEasy.createCampaign(3, 2 days);
+
+        assertEq(crowdFundEasy.fetchTotalCampaignIds() , 2);
+    }
+
+
     function testContribute() public {
         address user = address(1);
 
@@ -38,6 +52,21 @@ contract CrowdFundEasyTest is Test {
         crowdFundEasy.createCampaign(4, 4 days);
         
         skip(100);
+        vm.startPrank(contributor);
+        token.approve(address(crowdFundEasy), 1);
+        assertEq(token.allowance(contributor, address(crowdFundEasy)), 1);
+
+        crowdFundEasy.contribute(1, 1);
+        vm.stopPrank();
+    }
+
+    function testFailContributeTimeUp() public {
+        address user = address(1);
+
+        vm.prank(user);
+        crowdFundEasy.createCampaign(4, 4 days);
+        
+        skip(4 days);
         vm.startPrank(contributor);
         token.approve(address(crowdFundEasy), 1);
         assertEq(token.allowance(contributor, address(crowdFundEasy)), 1);
