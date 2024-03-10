@@ -71,7 +71,7 @@ contract CrowdFundEasyTest is Test {
         token.approve(address(crowdFundEasy), 1);
         assertEq(token.allowance(contributor, address(crowdFundEasy)), 1);
 
-        crowdFundEasy.contribute(1, 1);
+        crowdFundEasy.contribute(1, 3);
         vm.stopPrank();
     }
 

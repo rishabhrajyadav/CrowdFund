@@ -7,7 +7,7 @@ interface IMyToken{
     function transfer(address to, uint256 value) external returns (bool);
 }
 
-contract CrowdFund {
+contract CrowdFundHard {
         uint256 private campaignIds;
         address[] private tokens;
         struct Campaign {
@@ -73,7 +73,7 @@ contract CrowdFund {
             uint256 amount = contributions[_id][msg.sender][token];
             if(amount > 0){
               contributions[_id][msg.sender][token] = 0;
-              campaign.totalFundsCollected -= amount;
+              campaign.totalFundsCollected -= amount * IMyToken(token).getTokenPriceInUSD();
               campaignAmounts[_id][token] -= amount;
               k += amount ;
               IMyToken(token).transfer(msg.sender, amount);
@@ -95,17 +95,18 @@ contract CrowdFund {
         if(block.timestamp < campaign.duration) revert();
         if(campaign.goal > campaign.totalFundsCollected) revert();
         campaigns[_id].goal = 0;
-        
+
         for(uint256 i; i < tokens.length; i++){
           address token = tokens[i];
-          uint256 amount = campaign.totalFundsCollected;
+          uint256 amount = campaignAmounts[_id][token];
           if(amount > 0){
-            campaigns[_id].totalFundsCollected = 0;
-            campaignAmounts[_id][token] = 0;
-            IMyToken(token).transfer( campaign.creator , campaign.totalFundsCollected);
+            campaignAmounts[_id][token] = 0;  
+            campaigns[_id].totalFundsCollected -= amount * IMyToken(token).getTokenPriceInUSD();
+            IMyToken(token).transfer( campaign.creator , amount);
           }
           
         }
+
     }
 
     /**
@@ -123,7 +124,7 @@ contract CrowdFund {
             uint256 amount = contributions[_id][msg.sender][token];
             if(amount > 0){
               contributions[_id][msg.sender][token] = 0;
-              campaign.totalFundsCollected -= amount;
+              campaign.totalFundsCollected -= amount * IMyToken(token).getTokenPriceInUSD();
               campaignAmounts[_id][token] -= amount;
               k += amount ;
               IMyToken(token).transfer(msg.sender, amount);
@@ -169,8 +170,9 @@ contract CrowdFund {
             }else{
                 remainingTime = 0;
             } 
+
             goal = campaign.goal;
-            totalFunds = campaign.totalFundsCollected * IMyToken(token).getTokenPriceInUSD(); 
+            totalFunds = campaign.totalFundsCollected;
         }
 
     function isTokenValid( address[] memory _tokens, address _token) private pure returns(bool){
@@ -182,4 +184,14 @@ contract CrowdFund {
         }
         return false;
     }    
+
+     //Just For testing you can remove this
+     function fetchCampaignDetails(uint256 _id) external view returns (Campaign memory campaign) {
+        return campaigns[_id];
+    }   
+
+    //Just For testing you can remove this
+     function fetchTotalCampaignIds() external view returns (uint256) {
+        return campaignIds;
+    }  
 }
